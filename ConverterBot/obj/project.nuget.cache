@@ -1,0 +1,11 @@
+{
+  "version": 2,
+  "dgSpecHash": "2faCyv7RySxtVqn81EmKqeYu6tVUQxEPx9+R87SY0MGUxeSPknP/LYsKyOOe1DMapSn6r+fymGj5x+WIF6/ysw==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\User\\source\\repos\\Converter-bot\\ConverterBotSln\\ConverterBot\\ConverterBot.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\User\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
+    "C:\\Users\\User\\.nuget\\packages\\telegram.bot\\19.0.0\\telegram.bot.19.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
