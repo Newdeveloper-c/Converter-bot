@@ -4,10 +4,16 @@
     <TargetFramework>net7.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>bd8b7d09-2155-4a01-8fa5-6f1e5e36f66d</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ILove_PDF" Version="1.4.0" />
     <PackageReference Include="Telegram.bot" Version="19.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Files\Edited\" />
   </ItemGroup>
 
 </Project>

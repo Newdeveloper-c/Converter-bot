@@ -41,6 +41,10 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "ILove_PDF": {
+              "target": "Package",
+              "version": "[1.4.0, )"
+            },
             "Telegram.bot": {
               "target": "Package",
               "version": "[19.0.0, )"
