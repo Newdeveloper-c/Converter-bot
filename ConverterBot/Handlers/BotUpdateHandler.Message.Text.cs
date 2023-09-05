@@ -1,6 +1,5 @@
 ﻿using Telegram.Bot.Types;
 using Telegram.Bot;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace ConverterBot.Handlers;
 
@@ -20,6 +19,7 @@ public partial class BotUpdateHandler
                 break;
 
             case "Convert to Pdf ➡️📒":
+                createdTask = EBotTasks.None;
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
                     $"Select needed section",
@@ -27,6 +27,7 @@ public partial class BotUpdateHandler
                 break;
 
             case "📒➡️ Convert Pdf to":
+                createdTask = EBotTasks.None;
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
                     $"Select needed section",
@@ -35,6 +36,7 @@ public partial class BotUpdateHandler
 
             case "/help":
             case "Help 🆘":
+                createdTask = EBotTasks.None;
                 await SendHelpInfo(botClient, message);
                 break;
 
@@ -57,11 +59,22 @@ public partial class BotUpdateHandler
                 break;
 
             case "Go back ⬅️":
+                if(createdTask == EBotTasks.None)
+                    await botClient.SendTextMessageAsync(
+                        message.Chat.Id,
+                        $"Select needed section",
+                        replyMarkup: BotMainMenu());
+                else if(createdTask == EBotTasks.OfficeToPdf)
+                    await botClient.SendTextMessageAsync(
+                            message.Chat.Id,
+                            $"Select needed section",
+                            replyMarkup: BotConvertToPdfMenu());
+                else
+                    await botClient.SendTextMessageAsync(
+                            message.Chat.Id,
+                            $"Select needed section",
+                            replyMarkup: BotConvertPdfToMenu());
                 createdTask = EBotTasks.None;
-                await botClient.SendTextMessageAsync(
-                    message.Chat.Id,
-                    $"Select needed section",
-                    replyMarkup: BotMainMenu());
                 break;
 
             default:
@@ -80,7 +93,8 @@ public partial class BotUpdateHandler
     {
         await botClient.SendTextMessageAsync(
             message.Chat.Id,
-            "Here all information about this bot. This section is developing yet !!!");
+            "Here all information about this bot. This section is developing yet !!!",
+            replyMarkup: BotMainMenu());
     }
 
     private async Task StartTheBot(
