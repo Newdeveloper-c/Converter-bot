@@ -1,24 +1,22 @@
 ﻿using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types;
 using Telegram.Bot;
-using LovePdf.Core;
-using LovePdf.Model.Task;
 
 namespace ConverterBot.Handlers;
 
 public partial class BotUpdateHandler
 {
-    private async Task MessageHandler(ITelegramBotClient botClient, Message? message, CancellationToken cancellationToken)
+    private async Task MessageHandler(
+        ITelegramBotClient botClient, 
+        Message? message, 
+        CancellationToken cancellationToken)
     {
         var handlers = message.Type switch
         {
-            MessageType.Text => TextProcessing(botClient, message, cancellationToken),
+            MessageType.Text => TextProcessing(botClient, message),
             MessageType.Photo => PhotoProcessing(botClient, message, cancellationToken),
-            MessageType.Audio => throw new NotImplementedException(),
-            MessageType.Video => throw new NotImplementedException(),
             MessageType.Document => DocumentProcessing(botClient, message, cancellationToken),
-            MessageType.Unknown => throw new NotImplementedException(),
-            _ => throw new NotImplementedException(),
+            _ => DefaultTypeHandling(botClient, message)
         };
 
         try
@@ -31,13 +29,18 @@ public partial class BotUpdateHandler
         }
     }
 
-    private async Task PhotoProcessing(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
+    private async Task DefaultTypeHandling(ITelegramBotClient botClient, Message message)
     {
-        throw new NotImplementedException();
-    }
+        if(createdTask == EBotTasks.None)
+        {
+            await botClient.SendTextMessageAsync(
+            message.Chat.Id,
+            "🟢 Please select needed section from menu 📲");
+            return;
+        }
 
-    private async Task TextProcessing(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
-    {
-        
+        await botClient.SendTextMessageAsync(
+            message.Chat.Id,
+            "❌ Please send document similar to selected menu !!!");
     }
 }

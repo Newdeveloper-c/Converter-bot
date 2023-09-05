@@ -1,4 +1,6 @@
-﻿using Telegram.Bot;
+﻿using ConverterBot.Options;
+using Microsoft.Extensions.Options;
+using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -8,10 +10,14 @@ namespace ConverterBot.Handlers;
 public partial class BotUpdateHandler : IUpdateHandler
 {
     private readonly ILogger<BotUpdateHandler> _logger;
+    private readonly LovePdfOptions _options;
 
-    public BotUpdateHandler(ILogger<BotUpdateHandler> logger)
+    public BotUpdateHandler(
+        ILogger<BotUpdateHandler> logger,
+        IOptions<LovePdfOptions> options)
     {
         _logger = logger;
+        _options = options.Value;
     }
 
     public Task HandlePollingErrorAsync(
@@ -23,6 +29,15 @@ public partial class BotUpdateHandler : IUpdateHandler
         return Task.CompletedTask;
     }
 
+    enum EBotTasks
+    {
+        None = 0,
+        OfficeToPdf = 1,
+        PdfToDoc = 2
+    }
+    private bool isStarted = false;
+    private EBotTasks createdTask = EBotTasks.None;
+
     public async Task HandleUpdateAsync(
         ITelegramBotClient botClient,
         Update update,
@@ -32,24 +47,19 @@ public partial class BotUpdateHandler : IUpdateHandler
             $"Type: {update.Message.Type}\n" +
            $"Text: {update.Message?.Text}");
 
+        if (!isStarted && update.Message?.Text != "/start")
+        {
+            await botClient.SendTextMessageAsync(
+                update.Message.Chat.Id,
+                "🟢 Please start the bot with /start 🙂");
+            return;
+        }
+
         var handlers = update.Type switch
         {
             UpdateType.Message => MessageHandler(botClient, update.Message, cancellationToken),
             UpdateType.CallbackQuery => CallbackQueryHandler(botClient, update.CallbackQuery, cancellationToken),
-            UpdateType.InlineQuery => throw new NotImplementedException(),
-            UpdateType.ChosenInlineResult => throw new NotImplementedException(),
-            UpdateType.EditedMessage => throw new NotImplementedException(),
-            UpdateType.ChannelPost => throw new NotImplementedException(),
-            UpdateType.EditedChannelPost => throw new NotImplementedException(),
-            UpdateType.ShippingQuery => throw new NotImplementedException(),
-            UpdateType.PreCheckoutQuery => throw new NotImplementedException(),
-            UpdateType.Poll => throw new NotImplementedException(),
-            UpdateType.PollAnswer => throw new NotImplementedException(),
-            UpdateType.MyChatMember => throw new NotImplementedException(),
-            UpdateType.ChatMember => throw new NotImplementedException(),
-            UpdateType.ChatJoinRequest => throw new NotImplementedException(),
-            UpdateType.Unknown => throw new NotImplementedException(),
-            _ => throw new NotImplementedException(),
+            _ => DefaultUpdateType(botClient, update)
         };
 
         try
@@ -60,5 +70,12 @@ public partial class BotUpdateHandler : IUpdateHandler
         {
             await HandlePollingErrorAsync(botClient, ex, cancellationToken);
         }
+    }
+
+    private async Task DefaultUpdateType(ITelegramBotClient botClient, Update update)
+    {
+        await botClient.SendTextMessageAsync(
+                update.Message.Chat.Id,
+                "❌ Please do not send improper messages !!!");
     }
 }
