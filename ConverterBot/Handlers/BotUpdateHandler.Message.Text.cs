@@ -13,11 +13,11 @@ public partial class BotUpdateHandler
         Message message)
     {
         string? fileName = string.Empty;
-        if(getName)
+        if (getName)
         {
             fileName = message.Text;
             getName = false;
-            
+
             await botClient.SendTextMessageAsync(
                     message.Chat.Id,
                     "Please send your images 🏞\n" +
@@ -26,16 +26,17 @@ public partial class BotUpdateHandler
         }
         switch (message.Text)
         {
-            
+
             case "/start":
                 isStarted = true;
-                createdTask = EBotTasks.None;
+                creatingTask = EBotTasks.None;
                 taskReady = false;
-                await StartTheBot(botClient, message);
+                getName = false;
+                await BotStart(botClient, message);
                 break;
 
             case "Convert to Pdf ➡️📒":
-                createdTask = EBotTasks.None;
+                creatingTask = EBotTasks.None;
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
                     $"Select needed section",
@@ -43,39 +44,38 @@ public partial class BotUpdateHandler
                 break;
 
             case "📒➡️ Convert from Pdf":
-                createdTask = EBotTasks.None;
+                creatingTask = EBotTasks.None;
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
                     $"Select needed section",
                     replyMarkup: BotConvertPdfToMenu());
                 break;
 
-            case "/help":
-            case "Help 🆘":
-                createdTask = EBotTasks.None;
-                await SendHelpInfo(botClient, message);
+            case "/help" or "Help 🆘":
+                creatingTask = EBotTasks.None;
+                await BotHelp(botClient, message);
                 break;
 
             case "📘 Word -> Pdf 📒":
-                createdTask = EBotTasks.Word;
+                creatingTask = EBotTasks.Word;
                 await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Please send your file 📄\n" +
                 "Then click Convert 🔄",
                 replyMarkup: BotTaskButtonMenu());
                 break;
-                
+
             case "📗 Excel -> Pdf 📒":
-                createdTask = EBotTasks.Excel;
+                creatingTask = EBotTasks.Excel;
                 await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Please send your file 📄\n" +
                 "Then click Convert 🔄",
                 replyMarkup: BotTaskButtonMenu());
                 break;
-                
+
             case "📙 PowerPoint -> Pdf 📒":
-                createdTask = EBotTasks.PowerPoint;
+                creatingTask = EBotTasks.PowerPoint;
                 await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Please send your file 📄\n" +
@@ -84,7 +84,7 @@ public partial class BotUpdateHandler
                 break;
 
             case "🏞 Images -> Pdf 📒":
-                createdTask = EBotTasks.Image;
+                creatingTask = EBotTasks.Image;
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
                     "Please, give name for pdf file:",
@@ -93,7 +93,7 @@ public partial class BotUpdateHandler
                 break;
 
             case "📒 Pdf -> Word 📘":
-                createdTask = EBotTasks.PdfToWord;
+                creatingTask = EBotTasks.PdfToWord;
                 await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Please send your file 📄\n" +
@@ -102,7 +102,7 @@ public partial class BotUpdateHandler
                 break;
 
             case "📒 Pdf -> Excel 📗":
-                createdTask = EBotTasks.PdfToExcel;
+                creatingTask = EBotTasks.PdfToExcel;
                 await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Please send your file 📄\n" +
@@ -111,7 +111,7 @@ public partial class BotUpdateHandler
                 break;
 
             case "📒 Pdf -> PowerPoint 📙":
-                createdTask = EBotTasks.PdfToPowerPoint;
+                creatingTask = EBotTasks.PdfToPowerPoint;
                 await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "Please send your file 📄\n" +
@@ -122,79 +122,93 @@ public partial class BotUpdateHandler
             case "Convert 🔄":
                 if (taskReady)
                 {
-                    switch (createdTask)
+                    switch (creatingTask)
                     {
-                        case EBotTasks.Word:
-                        case EBotTasks.Excel:
-                        case EBotTasks.PowerPoint:
+                        case EBotTasks.None:
                             await botClient.SendTextMessageAsync(
                                 message.Chat.Id,
-                                "🔄 Converting 🔄",
+                                "🟠 Please choose section from menu for converting your files " +
+                                "or get help with typing /help 🤗");
+                            break;
+
+                        case EBotTasks.Word or EBotTasks.Excel or EBotTasks.PowerPoint:
+                            await botClient.SendTextMessageAsync(
+                                message.Chat.Id,
+                                "🔄 Converting 🔄\n" +
+                                "Be patient !!! This may take some time",
                                 replyMarkup: BotBackButtonMenu());
 
                             await OfficeToPdfProcessing(botClient, message);
                             break;
+
                         case EBotTasks.Image:
                             await botClient.SendTextMessageAsync(
                                 message.Chat.Id,
-                                "🔄 Converting 🔄",
+                                "🔄 Converting 🔄\n" +
+                                "Be patient !!! This may take some time",
                                 replyMarkup: BotBackButtonMenu());
 
                             await ImagesToPdfProcessing(botClient, message, fileName ?? "file");
                             break;
-                        case EBotTasks.PdfToWord:
-                        case EBotTasks.PdfToExcel:
-                        case EBotTasks.PdfToPowerPoint:
+
+                        case EBotTasks.PdfToWord or EBotTasks.PdfToPowerPoint or EBotTasks.PdfToExcel:
                             await botClient.SendTextMessageAsync(
                                 message.Chat.Id,
-                                "🔄 Converting 🔄",
+                                "🔄 Converting 🔄\n" +
+                                "Be patient !!! This may take some time",
                                 replyMarkup: BotBackButtonMenu());
 
                             await PdfToOfficeProcessing(botClient, message);
                             break;
                     }
+                    DeleteTemps();
                     taskReady = false;
-
                 }
                 else
                 {
                     string answer = "‼️ Please send your file ‼️";
-                    if (createdTask == EBotTasks.Image)
+                    if (creatingTask == EBotTasks.Image)
                         answer = "‼️ Please send your images ‼️";
                     await botClient.SendTextMessageAsync(
-                                message.Chat.Id,
-                                answer);
+                        message.Chat.Id,
+                        answer);
                 }
-                    
-                    
                 break;
 
             case "Go back ⬅️":
-                if(createdTask == EBotTasks.None)
-                    await botClient.SendTextMessageAsync(
-                        message.Chat.Id,
-                        $"Select needed section",
-                        replyMarkup: BotMainMenu());
-                else if(createdTask == EBotTasks.Word ||
-                        createdTask == EBotTasks.Excel ||
-                        createdTask == EBotTasks.PowerPoint)
-                    await botClient.SendTextMessageAsync(
+                switch (creatingTask)
+                {
+                    case EBotTasks.None:
+                        await botClient.SendTextMessageAsync(
+                            message.Chat.Id,
+                            $"Select needed section",
+                            replyMarkup: BotMainMenu());
+                        break;
+
+                    case EBotTasks.Word or EBotTasks.Excel or EBotTasks.PowerPoint:
+                        await botClient.SendTextMessageAsync(
                             message.Chat.Id,
                             $"Select needed section",
                             replyMarkup: BotConvertToPdfMenu());
-                else if(createdTask == EBotTasks.PdfToWord ||
-                        createdTask == EBotTasks.PdfToPowerPoint ||
-                        createdTask == EBotTasks.PdfToExcel)
-                    await botClient.SendTextMessageAsync(
+                        break;
+
+                    case EBotTasks.PdfToWord or EBotTasks.PdfToPowerPoint or EBotTasks.PdfToExcel:
+                        await botClient.SendTextMessageAsync(
                             message.Chat.Id,
                             $"Select needed section",
                             replyMarkup: BotConvertPdfToMenu());
-                else
-                    await botClient.SendTextMessageAsync(
+                        break;
+
+                    case EBotTasks.Image:
+                        await botClient.SendTextMessageAsync(
                             message.Chat.Id,
                             $"Select needed section",
                             replyMarkup: BotConvertToPdfMenu());
-                createdTask = EBotTasks.None;
+                        break;
+                }
+                DeleteTemps();
+                creatingTask = EBotTasks.None;
+                taskReady = false;
                 break;
 
             default:
@@ -204,10 +218,9 @@ public partial class BotUpdateHandler
                     "or get help with typing /help 🤗");
                 break;
         }
-
     }
 
-    private async Task SendHelpInfo(
+    private async Task BotHelp(
         ITelegramBotClient botClient,
         Message message)
     {
@@ -218,16 +231,16 @@ public partial class BotUpdateHandler
             replyMarkup: BotMainMenu());
     }
 
-    private async Task StartTheBot(
+    private async Task BotStart(
         ITelegramBotClient botClient,
         Message message)
     {
         await botClient.SendTextMessageAsync(
                     message.Chat.Id,
-                    $"📣 Hello {message.Chat.FirstName}. Its great to see you here 😃\n" +
-                    $"🧡 I am files converter telegram bot 😊\n" +
-                    $"🟢 You can start converting your files with just clinking need menu button and sending your file 🙃\n" +
-                    $"🟡 if something is not clear, do not hesitate to call for help with /help 😇",
+                    $"📣  Hello {message.Chat.FirstName}. Its great to see you here  😃\n" +
+                    $"🧡  I am files converter telegram bot  😊\n" +
+                    $"🟢  You can start converting your files with just clicking need menu button and sending your file  🙃\n" +
+                    $"🟡  if something is not clear, do not hesitate to call for help with /help  😇",
                     replyMarkup: BotMainMenu());
     }
 }

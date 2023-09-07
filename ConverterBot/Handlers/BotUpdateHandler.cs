@@ -42,7 +42,7 @@ public partial class BotUpdateHandler : IUpdateHandler
     }
     private bool isStarted = false;
     private bool needDirsCreated = false;
-    private EBotTasks createdTask = EBotTasks.None;
+    private EBotTasks creatingTask = EBotTasks.None;
 
     public async Task HandleUpdateAsync(
         ITelegramBotClient botClient,

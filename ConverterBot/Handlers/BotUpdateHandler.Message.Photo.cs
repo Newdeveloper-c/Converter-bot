@@ -75,7 +75,6 @@ public partial class BotUpdateHandler
 
         string destinationPath = currentProcessingImagesFolder;
         var images = Directory.GetFiles(destinationPath);
-        currentProcessingFilePath = string.Empty;
 
         var api = new LovePdfApi(_options.PublicKey, _options.SecretKey);
         var task = api.CreateTask<ImageToPdfTask>();
@@ -91,5 +90,7 @@ public partial class BotUpdateHandler
                 InputFile.FromStream(stream, $"{pdfFileName}.pdf"),
                 replyMarkup: BotTaskButtonMenu());
         }
+
+        currentProcessingFilePath = string.Empty;
     }
 }

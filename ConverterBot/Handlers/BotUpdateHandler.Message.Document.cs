@@ -10,14 +10,14 @@ public partial class BotUpdateHandler
 {
     private string currentProcessingFilePath = string.Empty;
     private string currentProcessingImagesFolder = string.Empty;
+    private string currentFileName = string.Empty;
     private bool taskReady = false;
     private async Task FileProcessing(
         ITelegramBotClient botClient,
         Message message,
         CancellationToken cancellationToken)
     {
-
-        switch (createdTask)
+        switch (creatingTask)
         {
             case EBotTasks.None:
                 await botClient.SendTextMessageAsync(
@@ -36,9 +36,9 @@ public partial class BotUpdateHandler
             case EBotTasks.Image:
                 await Images(botClient, message, cancellationToken);
                 break;
-            case EBotTasks.PdfToWord:
-            case EBotTasks.PdfToExcel:
-            case EBotTasks.PdfToPowerPoint:
+            case EBotTasks.PdfToWord or
+                 EBotTasks.PdfToExcel or
+                 EBotTasks.PdfToPowerPoint:
                 await PdfFile(botClient, message, cancellationToken);
                 break;
             default:
@@ -66,6 +66,7 @@ public partial class BotUpdateHandler
         }
 
         currentProcessingFilePath = await GetFile(botClient,
+                                                  message,
                                                   message.Document.FileName,
                                                   filePath, cancellationToken);
         taskReady = true;
@@ -88,6 +89,7 @@ public partial class BotUpdateHandler
         }
 
         currentProcessingFilePath = await GetFile(botClient,
+                                                  message,
                                                   message.Document.FileName,
                                                   filePath, cancellationToken);
         taskReady = true;
@@ -110,6 +112,7 @@ public partial class BotUpdateHandler
         }
 
         currentProcessingFilePath = await GetFile(botClient,
+                                                  message,
                                                   message.Document.FileName,
                                                   filePath, cancellationToken);
         taskReady = true;
@@ -135,6 +138,7 @@ public partial class BotUpdateHandler
         }
 
         currentProcessingFilePath = await GetFile(botClient, 
+                                                  message,
                                                   message.Document.FileName, 
                                                   filePath, cancellationToken);
         taskReady = true;
@@ -142,16 +146,27 @@ public partial class BotUpdateHandler
 
     private async Task<string> GetFile(
         ITelegramBotClient botClient,
+        Message message,
         string initialFileName,
         string filePath,
         CancellationToken cancellationToken)
     {
+        if (currentProcessingFilePath != string.Empty)
+        {
+            await botClient.SendTextMessageAsync(
+                 message.Chat.Id,
+                "‼️ Only last sended file will be converted.\n" +
+                "Please click on Convert 🔄");
+            DeleteTemps();
+        }
+            
         string ext = Path.GetExtension(filePath);
         string fileName = FixCyrillic(initialFileName
             .Substring(0, initialFileName.IndexOf('.')))
             + AddDateTime();
-
+        currentFileName = fileName;
         string destinationPath = $@".\Files\{fileName + ext}";
+
         await using (FileStream fileStream = System.IO.File.OpenWrite(destinationPath))
         {
             await botClient.DownloadFileAsync(filePath, fileStream, cancellationToken);
@@ -172,21 +187,19 @@ public partial class BotUpdateHandler
             return;
         }
 
-        string destinationPath = $@".\Files\Edited";
-        string fileName = Path.GetFileName(currentProcessingFilePath);
-        currentProcessingFilePath = string.Empty;
-
         var api = new LovePdfApi(_options.PublicKey, _options.SecretKey);
         var task = api.CreateTask<OfficeToPdfTask>();
+
         task.AddFile(currentProcessingFilePath);
         task.Process();
-        task.DownloadFile(destinationPath);
+        var bytes = await task.DownloadFileAsByteArrayAsync();
 
-        await using (Stream stream = System.IO.File.OpenRead(destinationPath + $@"\{fileName}.pdf"))
+
+        await using (Stream stream = new MemoryStream(bytes))
         {
             await botClient.SendDocumentAsync(
                 message.Chat.Id,
-                InputFile.FromStream(stream, $"{fileName}.pdf"),
+                InputFile.FromStream(stream, $"{currentFileName}.pdf"),
                 replyMarkup: BotTaskButtonMenu());
         }
     }
@@ -199,97 +212,5 @@ public partial class BotUpdateHandler
         await botClient.SendTextMessageAsync(
         message.Chat.Id,
         "This feature is developing yet !!!");
-    }
-
-    private string AddDateTime()
-    {
-        DateTime now = DateTime.UtcNow;
-        string format = "yyyyMMddHHmmss";
-        string formattedDateTime = now.ToString(format);
-        return formattedDateTime;
-    }
-
-    private static readonly Dictionary<char, string> ConvertedLetters =
-        new Dictionary<char, string>
-    {
-        {'а', "a"},
-        {'б', "b"},
-        {'в', "v"},
-        {'г', "g"},
-        {'д', "d"},
-        {'е', "e"},
-        {'ё', "yo"},
-        {'ж', "zh"},
-        {'з', "z"},
-        {'и', "i"},
-        {'й', "j"},
-        {'к', "k"},
-        {'л', "l"},
-        {'м', "m"},
-        {'н', "n"},
-        {'о', "o"},
-        {'п', "p"},
-        {'р', "r"},
-        {'с', "s"},
-        {'т', "t"},
-        {'у', "u"},
-        {'ф', "f"},
-        {'х', "h"},
-        {'ц', "c"},
-        {'ч', "ch"},
-        {'ш', "sh"},
-        {'щ', "sch"},
-        {'ъ', "j"},
-        {'ы', "i"},
-        {'ь', "j"},
-        {'э', "e"},
-        {'ю', "yu"},
-        {'я', "ya"},
-        {'А', "A"},
-        {'Б', "B"},
-        {'В', "V"},
-        {'Г', "G"},
-        {'Д', "D"},
-        {'Е', "E"},
-        {'Ё', "Yo"},
-        {'Ж', "Zh"},
-        {'З', "Z"},
-        {'И', "I"},
-        {'Й', "J"},
-        {'К', "K"},
-        {'Л', "L"},
-        {'М', "M"},
-        {'Н', "N"},
-        {'О', "O"},
-        {'П', "P"},
-        {'Р', "R"},
-        {'С', "S"},
-        {'Т', "T"},
-        {'У', "U"},
-        {'Ф', "F"},
-        {'Х', "H"},
-        {'Ц', "C"},
-        {'Ч', "Ch"},
-        {'Ш', "Sh"},
-        {'Щ', "Sch"},
-        {'Ъ', "J"},
-        {'Ы', "I"},
-        {'Ь', "J"},
-        {'Э', "E"},
-        {'Ю', "Yu"},
-        {'Я', "Ya"}
-    };
-
-    private static string FixCyrillic(string source)
-    {
-        var result = new StringBuilder();
-        foreach (var letter in source)
-        {
-            if (ConvertedLetters.ContainsKey(letter))
-                result.Append(ConvertedLetters[letter]);
-            else
-                result.Append(letter);
-        }
-        return result.ToString();
     }
 }

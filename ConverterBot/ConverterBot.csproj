@@ -15,8 +15,4 @@
     <PackageReference Include="Telegram.bot" Version="19.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Files\Edited\" />
-  </ItemGroup>
-
 </Project>

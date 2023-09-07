@@ -31,7 +31,7 @@ public partial class BotUpdateHandler
 
     private async Task DefaultTypeHandling(ITelegramBotClient botClient, Message message)
     {
-        if(createdTask == EBotTasks.None)
+        if(creatingTask == EBotTasks.None)
         {
             await botClient.SendTextMessageAsync(
             message.Chat.Id,
