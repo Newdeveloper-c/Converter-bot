@@ -15,7 +15,7 @@ public partial class BotUpdateHandler
             },
             new[]
             {
-                new KeyboardButton("📒➡️ Convert Pdf to")
+                new KeyboardButton("📒➡️ Convert from Pdf")
             },
             new[]
             {
@@ -40,11 +40,15 @@ public partial class BotUpdateHandler
             },
             new[]
             {
-                new KeyboardButton("📗 Exsel -> Pdf 📒")
+                new KeyboardButton("📗 Excel -> Pdf 📒")
             },
             new[]
             {
                 new KeyboardButton("📙 PowerPoint -> Pdf 📒")
+            },
+            new[]
+            {
+                new KeyboardButton("🏞 Images -> Pdf 📒")
             },
             new[]
             {
@@ -66,6 +70,35 @@ public partial class BotUpdateHandler
             new[]
             {
                 new KeyboardButton("📒 Pdf -> Word 📘")
+            },
+            new[]
+            {
+                new KeyboardButton("📒 Pdf -> Excel 📗")
+            },
+            new[]
+            {
+                new KeyboardButton("📒 Pdf -> PowerPoint 📙")
+            },
+            new[]
+            {
+                new KeyboardButton("Go back ⬅️")
+            }
+        })
+        {
+            ResizeKeyboard = true
+        };
+
+        return replyKeyboard;
+    }
+
+    private IReplyMarkup? BotTaskButtonMenu()
+    {
+        var replyKeyboard = new ReplyKeyboardMarkup(
+        new[]
+        {
+            new[]
+            {
+                new KeyboardButton("Convert 🔄")
             },
             new[]
             {

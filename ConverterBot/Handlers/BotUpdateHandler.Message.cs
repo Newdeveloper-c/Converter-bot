@@ -14,8 +14,8 @@ public partial class BotUpdateHandler
         var handlers = message.Type switch
         {
             MessageType.Text => TextProcessing(botClient, message),
-            MessageType.Photo => PhotoProcessing(botClient, message, cancellationToken),
-            MessageType.Document => DocumentProcessing(botClient, message, cancellationToken),
+            MessageType.Photo => FileProcessing(botClient, message, cancellationToken),
+            MessageType.Document => FileProcessing(botClient, message, cancellationToken),
             _ => DefaultTypeHandling(botClient, message)
         };
 
@@ -41,6 +41,6 @@ public partial class BotUpdateHandler
 
         await botClient.SendTextMessageAsync(
             message.Chat.Id,
-            "❌ Please send document similar to selected menu !!!");
+            "❌ Please send file similar to selected menu !!!");
     }
 }

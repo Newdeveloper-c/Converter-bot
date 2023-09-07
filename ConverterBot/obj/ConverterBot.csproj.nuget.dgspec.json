@@ -41,9 +41,17 @@
         "net7.0": {
           "targetAlias": "net7.0",
           "dependencies": {
+            "CloudConvert.API": {
+              "target": "Package",
+              "version": "[1.2.0, )"
+            },
             "ILove_PDF": {
               "target": "Package",
               "version": "[1.4.0, )"
+            },
+            "Microsoft.VisualStudio.Azure.Containers.Tools.Targets": {
+              "target": "Package",
+              "version": "[1.18.1, )"
             },
             "Telegram.bot": {
               "target": "Package",

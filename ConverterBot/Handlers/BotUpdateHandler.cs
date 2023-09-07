@@ -32,10 +32,16 @@ public partial class BotUpdateHandler : IUpdateHandler
     enum EBotTasks
     {
         None = 0,
-        OfficeToPdf = 1,
-        PdfToDoc = 2
+        Word = 1,
+        Excel = 2,
+        PowerPoint = 3,
+        PdfToWord = 4,
+        PdfToExcel = 5,
+        PdfToPowerPoint = 6,
+        Image = 7
     }
     private bool isStarted = false;
+    private bool needDirsCreated = false;
     private EBotTasks createdTask = EBotTasks.None;
 
     public async Task HandleUpdateAsync(
@@ -53,6 +59,13 @@ public partial class BotUpdateHandler : IUpdateHandler
                 update.Message.Chat.Id,
                 "🟢 Please start the bot with /start 🙂");
             return;
+        }
+
+        if (!needDirsCreated)
+        {
+            Directory.CreateDirectory($@".\Files");
+            Directory.CreateDirectory($@".\Files\Edited");
+            needDirsCreated = true;
         }
 
         var handlers = update.Type switch
