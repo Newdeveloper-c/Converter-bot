@@ -12,16 +12,17 @@ public partial class BotUpdateHandler
         ITelegramBotClient botClient,
         Message message)
     {
-        string? fileName = string.Empty;
         if (getName)
         {
-            fileName = message.Text;
-            getName = false;
-
             await botClient.SendTextMessageAsync(
-                    message.Chat.Id,
-                    "Please send your images 🏞\n" +
-                    "Then click Convert 🔄");
+                message.Chat.Id,
+                "🔄 Converting 🔄\n" +
+                "Be patient !!! This may take some time",
+                replyMarkup: BotBackButtonMenu());
+            await ImagesToPdfProcessing(botClient, message, message.Text ?? "file");
+            getName = false;
+            DeleteTemps();
+            taskReady = false;
             return;
         }
         switch (message.Text)
@@ -87,9 +88,9 @@ public partial class BotUpdateHandler
                 creatingTask = EBotTasks.Image;
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
-                    "Please, give name for pdf file:",
+                    "Please send your images 🏞\n" +
+                    "Then click Convert 🔄",
                     replyMarkup: BotTaskButtonMenu());
-                getName = true;
                 break;
 
             case "📒 Pdf -> Word 📘":
@@ -144,12 +145,9 @@ public partial class BotUpdateHandler
                         case EBotTasks.Image:
                             await botClient.SendTextMessageAsync(
                                 message.Chat.Id,
-                                "🔄 Converting 🔄\n" +
-                                "Be patient !!! This may take some time",
-                                replyMarkup: BotBackButtonMenu());
-
-                            await ImagesToPdfProcessing(botClient, message, fileName ?? "file");
-                            break;
+                                "Please, give name for pdf file:");
+                            getName = true;
+                            return;
 
                         case EBotTasks.PdfToWord or EBotTasks.PdfToPowerPoint or EBotTasks.PdfToExcel:
                             await botClient.SendTextMessageAsync(

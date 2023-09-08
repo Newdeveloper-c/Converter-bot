@@ -2,14 +2,22 @@
 using Telegram.Bot;
 using LovePdf.Core;
 using LovePdf.Model.Task;
+using Telegram.Bot.Types.Enums;
 
 namespace ConverterBot.Handlers;
 
 public partial class BotUpdateHandler
 {
+    private string currentProcessingImagesFolder = string.Empty;
+
     private async Task Images(ITelegramBotClient botClient, Message message, CancellationToken cancellationToken)
     {
-        var fileId = message.Document.FileId;
+        string fileId;
+        if (message.Type == MessageType.Photo)
+            fileId = message.Photo.Last().FileId;
+        else
+            fileId = message.Document.FileId;
+        
         var fileInfo = await botClient.GetFileAsync(fileId);
         var filePath = fileInfo.FilePath;
         string ext = Path.GetExtension(filePath);
@@ -24,15 +32,12 @@ public partial class BotUpdateHandler
             return;
         }
 
-        currentProcessingFilePath = await GetImages(botClient,
-                                                  message,
-                                                  filePath, cancellationToken);
+        GetImages(botClient, filePath, cancellationToken);
         taskReady = true;
     }
 
-    private async Task<string> GetImages(
+    private async Task GetImages(
         ITelegramBotClient botClient,
-        Message message,
         string? filePath,
         CancellationToken cancellationToken)
     {
@@ -42,22 +47,17 @@ public partial class BotUpdateHandler
             .Substring(0, initialFileName.IndexOf('.')))
             + AddDateTime();
 
-        string destinationFolder;
+        
         if (currentProcessingImagesFolder == string.Empty)
         {
-            destinationFolder = $@".\Files\Images_{AddDateTime()}";
-            Directory.CreateDirectory(destinationFolder);
+            currentProcessingImagesFolder = $@".\Files\Images_{AddDateTime()}";
+            Directory.CreateDirectory(currentProcessingImagesFolder);
         }
-        else
-            destinationFolder = currentProcessingImagesFolder;
-
-        var destinationPath = destinationFolder + fileName + ext;
-        await using (FileStream fileStream = System.IO.File.OpenWrite(destinationPath))
+        
+        await using (FileStream fileStream = System.IO.File.OpenWrite($"{currentProcessingImagesFolder}/{fileName}{ext}"))
         {
             await botClient.DownloadFileAsync(filePath, fileStream, cancellationToken);
         }
-
-        return destinationPath;
     }
 
     private async Task ImagesToPdfProcessing(
@@ -80,17 +80,21 @@ public partial class BotUpdateHandler
         var task = api.CreateTask<ImageToPdfTask>();
         foreach (var image in images)
             task.AddFile(image);
-        task.Process();
-        task.DownloadFile(destinationPath);
+        task.Process(new LovePdf.Model.TaskParams.ImageToPdfParams
+        {
+            Orientation = LovePdf.Model.Enums.Orientations.Portrait,
+            Margin = 10,
+            PageSize = LovePdf.Model.Enums.PageSizes.A4
+            MergeAfter = true
+    }) ;
+        var bytes = await task.DownloadFileAsByteArrayAsync();
 
-        await using (Stream stream = System.IO.File.OpenRead(destinationPath + $@"\{pdfFileName}.pdf"))
+        await using (Stream stream = new MemoryStream(bytes))
         {
             await botClient.SendDocumentAsync(
                 message.Chat.Id,
                 InputFile.FromStream(stream, $"{pdfFileName}.pdf"),
                 replyMarkup: BotTaskButtonMenu());
         }
-
-        currentProcessingFilePath = string.Empty;
     }
 }

@@ -9,7 +9,6 @@ namespace ConverterBot.Handlers;
 public partial class BotUpdateHandler
 {
     private string currentProcessingFilePath = string.Empty;
-    private string currentProcessingImagesFolder = string.Empty;
     private string currentFileName = string.Empty;
     private bool taskReady = false;
     private async Task FileProcessing(
@@ -193,7 +192,6 @@ public partial class BotUpdateHandler
         task.AddFile(currentProcessingFilePath);
         task.Process();
         var bytes = await task.DownloadFileAsByteArrayAsync();
-
 
         await using (Stream stream = new MemoryStream(bytes))
         {

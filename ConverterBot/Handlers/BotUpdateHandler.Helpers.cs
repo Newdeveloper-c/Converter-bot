@@ -107,7 +107,7 @@ public partial class BotUpdateHandler
 
         if (currentProcessingImagesFolder != string.Empty)
         {
-            Directory.Delete(currentProcessingImagesFolder);
+            Directory.Delete(currentProcessingImagesFolder, true);
             currentProcessingImagesFolder = string.Empty;
         }
     }
