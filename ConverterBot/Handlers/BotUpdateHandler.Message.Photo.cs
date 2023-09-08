@@ -84,7 +84,7 @@ public partial class BotUpdateHandler
         {
             Orientation = LovePdf.Model.Enums.Orientations.Portrait,
             Margin = 10,
-            PageSize = LovePdf.Model.Enums.PageSizes.A4
+            PageSize = LovePdf.Model.Enums.PageSizes.A4,
             MergeAfter = true
     }) ;
         var bytes = await task.DownloadFileAsByteArrayAsync();
