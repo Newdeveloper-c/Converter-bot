@@ -7,7 +7,7 @@ on:
     - dev
 
 env:
-  AZURE_WEBAPP_NAME: Files-Converter-Bot
+  AZURE_WEBAPP_NAME: ConverterBot
   AZURE_WEBAPP_PACKAGE_PATH: "./publish"
 
 jobs:
