@@ -1,10 +1,10 @@
-name: Publish 🚀
+name: Publish
 
 on:
   workflow_dispatch:
   push:
     branches:
-    - dev
+    - main
 
 env:
   AZURE_WEBAPP_NAME: ConverterBot
