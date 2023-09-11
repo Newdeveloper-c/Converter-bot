@@ -57,14 +57,13 @@ public partial class BotUpdateHandler : IUpdateHandler
         {
             await botClient.SendTextMessageAsync(
                 update.Message.Chat.Id,
-                "🟢 Please start the bot with /start 🙂");
+                "🟢 Please start the bot with /start");
             return;
         }
 
         if (!needDirsCreated)
         {
             Directory.CreateDirectory($@".\Files");
-            Directory.CreateDirectory($@".\Files\Edited");
             needDirsCreated = true;
         }
 

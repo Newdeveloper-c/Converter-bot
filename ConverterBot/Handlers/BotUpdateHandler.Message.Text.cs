@@ -1,7 +1,5 @@
 ﻿using Telegram.Bot.Types;
 using Telegram.Bot;
-using Telegram.Bot.Types.ReplyMarkups;
-using Telegram.Bot.Requests;
 
 namespace ConverterBot.Handlers;
 
@@ -17,7 +15,7 @@ public partial class BotUpdateHandler
             await botClient.SendTextMessageAsync(
                 message.Chat.Id,
                 "🔄 Converting 🔄\n" +
-                "Be patient !!! This may take some time",
+                "‼️ Be patientю This may take some time ‼️",
                 replyMarkup: BotBackButtonMenu());
             await ImagesToPdfProcessing(botClient, message, message.Text ?? "file");
             getName = false;
@@ -25,9 +23,9 @@ public partial class BotUpdateHandler
             taskReady = false;
             return;
         }
+
         switch (message.Text)
         {
-
             case "/start":
                 isStarted = true;
                 creatingTask = EBotTasks.None;
@@ -48,8 +46,9 @@ public partial class BotUpdateHandler
                 creatingTask = EBotTasks.None;
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
-                    $"Select needed section",
-                    replyMarkup: BotConvertPdfToMenu());
+                    "🛠  This section is developing yet. Please wait for updates  ‼️");
+                    //$"Select needed section",
+                    //replyMarkup: BotConvertPdfToMenu());
                 break;
 
             case "/help" or "Help 🆘":
@@ -128,15 +127,14 @@ public partial class BotUpdateHandler
                         case EBotTasks.None:
                             await botClient.SendTextMessageAsync(
                                 message.Chat.Id,
-                                "🟠 Please choose section from menu for converting your files " +
-                                "or get help with typing /help 🤗");
+                                "‼️ Please send your file or images for converting ‼️");
                             break;
 
                         case EBotTasks.Word or EBotTasks.Excel or EBotTasks.PowerPoint:
                             await botClient.SendTextMessageAsync(
                                 message.Chat.Id,
                                 "🔄 Converting 🔄\n" +
-                                "Be patient !!! This may take some time",
+                                "‼️ Be patientю This may take some time ‼️",
                                 replyMarkup: BotBackButtonMenu());
 
                             await OfficeToPdfProcessing(botClient, message);
@@ -153,7 +151,7 @@ public partial class BotUpdateHandler
                             await botClient.SendTextMessageAsync(
                                 message.Chat.Id,
                                 "🔄 Converting 🔄\n" +
-                                "Be patient !!! This may take some time",
+                                "‼️ Be patientю This may take some time ‼️",
                                 replyMarkup: BotBackButtonMenu());
 
                             await PdfToOfficeProcessing(botClient, message);
@@ -213,7 +211,7 @@ public partial class BotUpdateHandler
                 await botClient.SendTextMessageAsync(
                     message.Chat.Id,
                     "🟠 Please choose section from menu for converting your files " +
-                    "or get help with typing /help 🤗");
+                    "or get help with /help ");
                 break;
         }
     }
@@ -222,10 +220,10 @@ public partial class BotUpdateHandler
         ITelegramBotClient botClient,
         Message message)
     {
-        //TODO write full info about bot. But after finishing it !!!
+        //TODO write full info about the bot.
         await botClient.SendTextMessageAsync(
             message.Chat.Id,
-            "Here all information about this bot. This section is developing yet !!!",
+            "🛠  This section is developing yet. Please wait for updates  ‼️",
             replyMarkup: BotMainMenu());
     }
 
@@ -235,10 +233,10 @@ public partial class BotUpdateHandler
     {
         await botClient.SendTextMessageAsync(
                     message.Chat.Id,
-                    $"📣  Hello {message.Chat.FirstName}. Its great to see you here  😃\n" +
-                    $"🧡  I am files converter telegram bot  😊\n" +
-                    $"🟢  You can start converting your files with just clicking need menu button and sending your file  🙃\n" +
-                    $"🟡  if something is not clear, do not hesitate to call for help with /help  😇",
+                    $"📣  Hello {message.Chat.FirstName}. Its great to see you here\n" +
+                    $"🧡  I am File-Converter telegram bot\n" +
+                    $"🟢  You can start converting your files with just clicking need menu button and sending your file\n" +
+                    $"🟡  If something is not clear, do not hesitate to call for help with /help",
                     replyMarkup: BotMainMenu());
     }
 }

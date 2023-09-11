@@ -36,18 +36,12 @@ public partial class BotUpdateHandler
         {
             new[]
             {
-                new KeyboardButton("📘 Word -> Pdf 📒")
-            },
-            new[]
-            {
+                new KeyboardButton("📘 Word -> Pdf 📒"),
                 new KeyboardButton("📗 Excel -> Pdf 📒")
             },
             new[]
             {
-                new KeyboardButton("📙 PowerPoint -> Pdf 📒")
-            },
-            new[]
-            {
+                new KeyboardButton("📙 PowerPoint -> Pdf 📒"),
                 new KeyboardButton("🏞 Images -> Pdf 📒")
             },
             new[]
